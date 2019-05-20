@@ -20,7 +20,7 @@ VERSION_ZLIB=1.2.11
 VERSION_FFI=3.2.1
 VERSION_GLIB=2.56.4
 VERSION_XML2=2.9.9
-VERSION_GSF=1.14.45
+VERSION_GSF=1.14.46
 VERSION_EXIF=0.6.21
 VERSION_LCMS2=2.9
 VERSION_JPEG=2.0.2
@@ -28,7 +28,7 @@ VERSION_PNG16=1.6.34
 VERSION_WEBP=1.0.2
 VERSION_TIFF=4.0.10
 VERSION_ORC=0.4.28
-VERSION_GETTEXT=0.19.8.1
+VERSION_GETTEXT=0.20.1
 VERSION_GDKPIXBUF=2.36.12
 VERSION_FREETYPE=2.10.0
 VERSION_EXPAT=2.2.6
@@ -42,6 +42,7 @@ VERSION_PANGO=1.42.4
 VERSION_CROCO=0.6.12
 VERSION_SVG=2.45.5
 VERSION_GIF=5.1.4
+VERSION_LIBIMAGEQUANT=2.12.2
 
 # Least out-of-sync Sourceforge mirror
 SOURCEFORGE_BASE_URL=https://netix.dl.sourceforge.net/project/
@@ -76,16 +77,17 @@ version_latest "gettext" "$VERSION_GETTEXT" "898"
 #version_latest "gdkpixbuf" "$VERSION_GDKPIXBUF" "9533" # latest version requires meson instead of autotools
 version_latest "freetype" "$VERSION_FREETYPE" "854"
 version_latest "expat" "$VERSION_EXPAT" "770"
-version_latest "uuid" "$VERSION_UUID" "8179"
+#version_latest "uuid" "$VERSION_UUID" "8179"
 version_latest "fontconfig" "$VERSION_FONTCONFIG" "827"
-version_latest "harfbuzz" "$VERSION_HARFBUZZ" "1299"
-version_latest "pixman" "$VERSION_PIXMAN" "3648"
+#version_latest "harfbuzz" "$VERSION_HARFBUZZ" "1299"
+#version_latest "pixman" "$VERSION_PIXMAN" "3648"
 #version_latest "cairo" "$VERSION_CAIRO" "247" # latest version 1.16.2 in release monitoring does not exist
 version_latest "fribidi" "$VERSION_FRIBIDI" "857"
 #version_latest "pango" "$VERSION_PANGO" "11783" # latest version requires meson instead of autotools
-version_latest "croco" "$VERSION_CROCO" "11787"
-version_latest "svg" "$VERSION_SVG" "5420"
+#version_latest "croco" "$VERSION_CROCO" "11787"
+#version_latest "svg" "$VERSION_SVG" "5420"
 #version_latest "gif" "$VERSION_GIF" "1158" # v5.1.5+ provides a Makefile only so will require custom cross-compilation setup
+version_latest "libimagequant" "$VERSION_LIBIMAGEQUANT" "12768"
 if [ "$ALL_AT_VERSION_LATEST" = "false" ]; then exit 1; fi
 
 # Download and build dependencies from source
@@ -99,6 +101,12 @@ case ${PLATFORM} in *musl*)
   rm ${TARGET}/include/gettext-po.h
   rm -rf ${TARGET}/lib/*gettext*
 esac
+
+mkdir ${DEPS}/libimagequant
+curl -Ls https://github.com/ImageOptim/libimagequant/archive/${VERSION_LIBIMAGEQUANT}.tar.gz | tar xzC ${DEPS}/libimagequant --strip-components=1
+cd ${DEPS}/libimagequant
+./configure --host=${CHOST} --prefix=${TARGET} --enable-shared --disable-static --disable-dependency-tracking
+make install
 
 mkdir ${DEPS}/zlib
 curl -Ls http://zlib.net/zlib-${VERSION_ZLIB}.tar.xz | tar xJC ${DEPS}/zlib --strip-components=1
@@ -292,7 +300,8 @@ cd ${DEPS}/vips
   --disable-debug --disable-introspection --without-python --without-fftw \
   --without-magick --without-pangoft2 --without-ppm --without-analyze --without-radiance \
   --with-zip-includes=${TARGET}/include --with-zip-libraries=${TARGET}/lib \
-  --with-jpeg-includes=${TARGET}/include --with-jpeg-libraries=${TARGET}/lib
+  --with-jpeg-includes=${TARGET}/include --with-jpeg-libraries=${TARGET}/lib \
+  --with-imagequant
 make install-strip
 
 # Remove the old C++ bindings
@@ -318,6 +327,7 @@ echo "{\n\
   \"glib\": \"${VERSION_GLIB}\",\n\
   \"gsf\": \"${VERSION_GSF}\",\n\
   \"harfbuzz\": \"${VERSION_HARFBUZZ}\",\n\
+  \"imagequant\": \"${VERSION_LIBIMAGEQUANT}\",\n\
   \"jpeg\": \"${VERSION_JPEG}\",\n\
   \"lcms\": \"${VERSION_LCMS2}\",\n\
   \"orc\": \"${VERSION_ORC}\",\n\

@@ -1,3 +1,12 @@
+# Forked precompiled libvips
+
+This repo is for a precompiled version of libvips that includes libimagequant for better PNG support
+when using `sharp`.
+
+Install Instructions:
+* Set ENV Variable `SHARP_DIST_BASE_URL=https://github.com/avishnyak/sharp-libvips/releases/download/v8.7.4`
+* Run `npm install` or `yarn install`
+
 # Packaging scripts
 
 libvips and its dependencies are provided as pre-compiled shared libraries
