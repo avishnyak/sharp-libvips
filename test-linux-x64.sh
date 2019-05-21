@@ -13,7 +13,7 @@ test="npm run clean; npm install --unsafe-perm; npm test"
 for dist in debian:jessie debian:stretch ubuntu:trusty ubuntu:xenial; do
   echo "Testing $dist..."
   docker pull $dist
-  if docker run -i -t --rm -e "SHARP_DIST_BASE_URL=https://github.com/avishnyak/sharp-libvips/releases/download/v8.7.4/" -v $PWD:/v $dist >packaging/$dist.log 2>&1 sh -c "cd /v; ./packaging/test/debian.sh; $test";
+  if docker run -i -t --rm -v $PWD:/v $dist >packaging/$dist.log 2>&1 sh -c "SHARP_DIST_BASE_URL=https://github.com/avishnyak/sharp-libvips/releases/download/v8.7.4/; cd /v; ./packaging/test/debian.sh; $test";
   then echo "$dist OK"
   else echo "$dist fail" && cat packaging/$dist.log
   fi
@@ -22,7 +22,7 @@ done
 # Centos 7
 echo "Testing centos7..."
 docker pull centos:7
-if docker run -i -t --rm -e "SHARP_DIST_BASE_URL=https://github.com/avishnyak/sharp-libvips/releases/download/v8.7.4/" -v $PWD:/v centos:7 >packaging/centos7.log 2>&1 sh -c "cd /v; ./packaging/test/centos.sh; $test";
+if docker run -i -t --rm -v $PWD:/v centos:7 >packaging/centos7.log 2>&1 sh -c "SHARP_DIST_BASE_URL=https://github.com/avishnyak/sharp-libvips/releases/download/v8.7.4/; cd /v; ./test/centos.sh; $test";
 then echo "centos7 OK"
 else echo "centos7 fail" && cat packaging/centos7.log
 fi
@@ -30,7 +30,7 @@ fi
 # Archlinux latest
 echo "Testing archlinux..."
 docker pull pritunl/archlinux:latest
-if docker run -i -t --rm -e "SHARP_DIST_BASE_URL=https://github.com/avishnyak/sharp-libvips/releases/download/v8.7.4/" -v $PWD:/v pritunl/archlinux:latest >packaging/archlinux.log 2>&1 sh -c "cd /v; ./packaging/test/archlinux.sh; $test";
+if docker run -i -t --rm -v $PWD:/v pritunl/archlinux:latest >packaging/archlinux.log 2>&1 sh -c "SHARP_DIST_BASE_URL=https://github.com/avishnyak/sharp-libvips/releases/download/v8.7.4/; cd /v; ./test/archlinux.sh; $test";
 then echo "archlinux OK"
 else echo "archlinux fail" && cat packaging/archlinux.log
 fi

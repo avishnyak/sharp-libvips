@@ -24,7 +24,7 @@ VERSION_GSF=1.14.46
 VERSION_EXIF=0.6.21
 VERSION_LCMS2=2.9
 VERSION_JPEG=2.0.2
-VERSION_PNG16=1.6.34
+VERSION_PNG16=1.6.37
 VERSION_WEBP=1.0.2
 VERSION_TIFF=4.0.10
 VERSION_ORC=0.4.28
@@ -32,14 +32,14 @@ VERSION_GETTEXT=0.20.1
 VERSION_GDKPIXBUF=2.36.12
 VERSION_FREETYPE=2.10.0
 VERSION_EXPAT=2.2.6
-VERSION_UUID=2.33.1
+VERSION_UUID=2.33.2
 VERSION_FONTCONFIG=2.13.1
-VERSION_HARFBUZZ=2.3.1
-VERSION_PIXMAN=0.38.0
+VERSION_HARFBUZZ=2.4.0
+VERSION_PIXMAN=0.38.4
 VERSION_CAIRO=1.16.0
 VERSION_FRIBIDI=1.0.5
 VERSION_PANGO=1.42.4
-VERSION_CROCO=0.6.12
+VERSION_CROCO=0.6.13
 VERSION_SVG=2.45.5
 VERSION_GIF=5.1.4
 VERSION_LIBIMAGEQUANT=2.12.2
@@ -55,7 +55,7 @@ without_patch() {
 # Check for newer versions
 ALL_AT_VERSION_LATEST=true
 version_latest() {
-  VERSION_LATEST=$(curl -s https://release-monitoring.org/api/project/$3 | jq -r '.version' | tr -d v)
+  VERSION_LATEST=$(curl -s https://release-monitoring.org/api/project/$3 | jq -r '.versions[]' | grep -E -m1 '^[0-9]+(.[0-9]+)*$')
   if [ "$VERSION_LATEST" != "$2" ]; then
     ALL_AT_VERSION_LATEST=false
     echo "$1 version $2 has been superseded by $VERSION_LATEST"
@@ -69,7 +69,7 @@ version_latest "gsf" "$VERSION_GSF" "1980"
 version_latest "exif" "$VERSION_EXIF" "1607"
 version_latest "lcms2" "$VERSION_LCMS2" "9815"
 version_latest "jpeg" "$VERSION_JPEG" "1648"
-version_latest "png" "$VERSION_PNG16" "15294"
+version_latest "png" "$VERSION_PNG16" "1705"
 version_latest "webp" "$VERSION_WEBP" "1761"
 version_latest "tiff" "$VERSION_TIFF" "13521"
 version_latest "orc" "$VERSION_ORC" "2573"
@@ -77,15 +77,15 @@ version_latest "gettext" "$VERSION_GETTEXT" "898"
 #version_latest "gdkpixbuf" "$VERSION_GDKPIXBUF" "9533" # latest version requires meson instead of autotools
 version_latest "freetype" "$VERSION_FREETYPE" "854"
 version_latest "expat" "$VERSION_EXPAT" "770"
-#version_latest "uuid" "$VERSION_UUID" "8179"
+version_latest "uuid" "$VERSION_UUID" "8179"
 version_latest "fontconfig" "$VERSION_FONTCONFIG" "827"
-#version_latest "harfbuzz" "$VERSION_HARFBUZZ" "1299"
-#version_latest "pixman" "$VERSION_PIXMAN" "3648"
-#version_latest "cairo" "$VERSION_CAIRO" "247" # latest version 1.16.2 in release monitoring does not exist
+version_latest "harfbuzz" "$VERSION_HARFBUZZ" "1299"
+version_latest "pixman" "$VERSION_PIXMAN" "3648"
+#version_latest "cairo" "$VERSION_CAIRO" "247" # latest version in release monitoring does not exist
 version_latest "fribidi" "$VERSION_FRIBIDI" "857"
 #version_latest "pango" "$VERSION_PANGO" "11783" # latest version requires meson instead of autotools
-#version_latest "croco" "$VERSION_CROCO" "11787"
-#version_latest "svg" "$VERSION_SVG" "5420"
+version_latest "croco" "$VERSION_CROCO" "11787"
+#version_latest "svg" "$VERSION_SVG" "5420" latest version fails to link against latest cairo
 #version_latest "gif" "$VERSION_GIF" "1158" # v5.1.5+ provides a Makefile only so will require custom cross-compilation setup
 version_latest "libimagequant" "$VERSION_LIBIMAGEQUANT" "12768"
 if [ "$ALL_AT_VERSION_LATEST" = "false" ]; then exit 1; fi
@@ -312,7 +312,7 @@ rm -rf pkgconfig .libs *.la libvipsCC*
 
 # Create JSON file of version numbers
 cd ${TARGET}
-echo "{\n\
+printf "{\n\
   \"cairo\": \"${VERSION_CAIRO}\",\n\
   \"croco\": \"${VERSION_CROCO}\",\n\
   \"exif\": \"${VERSION_EXIF}\",\n\
@@ -343,7 +343,7 @@ echo "{\n\
   \"zlib\": \"${VERSION_ZLIB}\"\n\
 }" >versions.json
 
-echo "\"${PLATFORM}\"" >platform.json
+printf "\"${PLATFORM}\"" >platform.json
 
 # Create .tar.gz
 tar czf /packaging/libvips-${VERSION_VIPS}-${PLATFORM}.tar.gz include lib *.json
