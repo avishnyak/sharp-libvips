@@ -40,7 +40,7 @@ Use of libraries under the terms of the LGPLv3 is via the
 | libexif       | LGPLv3                                                                                                   |
 | libffi        | MIT Licence                                                                                              |
 | libgsf        | LGPLv3                                                                                                   |
-| libjpeg-turbo | [zlib License, IJG License](https://github.com/libjpeg-turbo/libjpeg-turbo/blob/master/LICENSE.md)       |
+| libimagequant | [GPLv3](https://github.com/ImageOptim/libimagequant/blob/master/COPYRIGHT)                                        |
 | libpng        | [libpng License](http://www.libpng.org/pub/png/src/libpng-LICENSE.txt)                                   |
 | librsvg       | LGPLv3                                                                                                   |
 | libtiff       | [libtiff License](http://www.libtiff.org/misc.html) (BSD-like)                                           |
@@ -48,7 +48,7 @@ Use of libraries under the terms of the LGPLv3 is via the
 | libvips       | LGPLv3                                                                                                   |
 | libwebp       | New BSD License                                                                                          |
 | libxml2       | MIT Licence                                                                                              |
+| mozjpeg       | [zlib License, IJG License](https://github.com/mozilla/mozjpeg/blob/master/LICENSE.md)                   |
 | pango         | LGPLv3                                                                                                   |
 | pixman        | MIT Licence                                                                                              |
 | zlib          | [zlib Licence](https://github.com/madler/zlib/blob/master/zlib.h)                                        |
-| libimagequant | [GPLv3](https://github.com/ImageOptim/libimagequant/blob/master/COPYRIGHT)                                        |
