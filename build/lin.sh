@@ -320,7 +320,7 @@ printf "{\n\
   \"gsf\": \"${VERSION_GSF}\",\n\
   \"harfbuzz\": \"${VERSION_HARFBUZZ}\",\n\
   \"imagequant\": \"${VERSION_LIBIMAGEQUANT}\",\n\
-  \"jpeg\": \"${VERSION_JPEG}\",\n\
+  \"jpeg\": \"${VERSION_MOZJPEG}\",\n\
   \"lcms\": \"${VERSION_LCMS2}\",\n\
   \"orc\": \"${VERSION_ORC}\",\n\
   \"pango\": \"${VERSION_PANGO}\",\n\
