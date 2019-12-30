@@ -5,10 +5,10 @@ LABEL maintainer="anton@b8ta.com"
 
 # Build dependencies
 RUN \
-  yum update -y \
-  && yum install -y epel-release centos-release-scl \
-  && yum group install -y "Development Tools" \
-  && yum install -y --setopt=tsflags=nodocs \
+  yum update -y && \
+  yum install -y epel-release centos-release-scl && \
+  yum group install -y "Development Tools" && \
+  yum install -y --setopt=tsflags=nodocs \
     advancecomp \
     cmake3 \
     devtoolset-8-gcc \
@@ -20,8 +20,12 @@ RUN \
     jq \
     nasm \
     prelink \
-  && curl https://sh.rustup.rs -sSf | sh -s -- -y \
-  && ln -s /usr/bin/cmake3 /usr/bin/cmake
+    patchelf \
+    ninja-build && \
+  curl https://sh.rustup.rs -sSf | sh -s -- -y && \
+  ln -s /usr/bin/cmake3 /usr/bin/cmake && \
+  ln -s /usr/bin/ninja-build /usr/bin/ninja && \
+  pip3 install meson
 
 # Compiler settings
 ENV \
