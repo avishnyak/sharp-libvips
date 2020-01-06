@@ -20,7 +20,8 @@ used under the terms of the following licences:
 | libexif       | LGPLv3                                                                                                    |
 | libffi        | MIT Licence                                                                                               |
 | libgsf        | LGPLv3                                                                                                    |
-| libjpeg-turbo | [zlib License, IJG License](https://github.com/libjpeg-turbo/libjpeg-turbo/blob/master/LICENSE.md)        |
+| mozjpeg       | [zlib License, IJG License](https://github.com/mozilla/mozjpeg/blob/master/LICENSE.md)                    |
+| libimagequant | [GPLv3](https://github.com/ImageOptim/libimagequant/blob/master/COPYRIGHT)                                |
 | libpng        | [libpng License](http://www.libpng.org/pub/png/src/libpng-LICENSE.txt)                                    |
 | librsvg       | LGPLv3                                                                                                    |
 | libtiff       | [libtiff License](https://libtiff.gitlab.io/libtiff/misc.html) (BSD-like)                                 |

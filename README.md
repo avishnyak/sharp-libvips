@@ -4,8 +4,10 @@ This repo is for a precompiled version of libvips that includes libimagequant fo
 when using `sharp`.
 
 Install Instructions:
-* Set ENV Variable `SHARP_DIST_BASE_URL=https://github.com/avishnyak/sharp-libvips/releases/download/v8.8.1`
+* Set ENV Variable `SHARP_DIST_BASE_URL=https://github.com/avishnyak/sharp-libvips/releases/download/v8.9.0`
 * Run `npm install` or `yarn install`
+
+Currently compiled and tested against linux-x64 (non-musl) only.  Let me know if you need any of the other flavors.
 
 # Contributions
 

@@ -1,2 +1,3 @@
 libvips*
 *.log
+test-fs

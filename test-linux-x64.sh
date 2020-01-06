@@ -6,34 +6,33 @@ if ! type docker >/dev/null; then
   exit 1
 fi
 
-test="npm run clean; npm install --unsafe-perm; npm test"
+read -r -d '' test << EOM
+mkdir sharp &&
+curl -s https://api.github.com/repos/lovell/sharp/releases/latest | jq -r ".tarball_url" | xargs curl -Ls | tar xzC sharp --strip-components=1 &&
+cd ./sharp &&
+npm config set sharp_dist_base_url "https://github.com/avishnyak/sharp-libvips/releases/download/v8.8.1/" &&
+npm run -s clean &&
+npm install --loglevel error --unsafe-perm &&
+npm run test-unit
+EOM
 
-# Debian 7, 8
-# Ubuntu 14.04, 16.04
-for dist in debian:jessie debian:stretch ubuntu:trusty ubuntu:xenial; do
+if [[ $* == *--quick* ]];
+then distros="debian:stretch"
+else distros="debian:jessie debian:stretch ubuntu:trusty ubuntu:xenial centos:7" # No support for archlinux:latest right now
+fi
+
+for dist in $distros
+do
+  dist_from_tag="${dist%:*}"
   echo "Testing $dist..."
   docker pull $dist
   echo "" >$dist.log
-  if docker run -i -t --rm -v $PWD:/v $dist >$dist.log 2>&1 sh -c "SHARP_DIST_BASE_URL=https://github.com/avishnyak/sharp-libvips/releases/download/v8.8.0/; cd /v; ./test/debian.sh; $test";
+  rm -rf ./test-fs/
+  mkdir test-fs && cp -r ./test/ ./test-fs/test/
+  if docker run -i -t --rm -v $PWD/test-fs:/v $dist >$dist.log 2>&1 sh -c "cd /v; ./test/$dist_from_tag.sh; $test";
   then echo "$dist OK"
-  else echo "$dist fail" && cat /$dist.log
+  else echo "$dist fail" && cat ./$dist.log
   fi
 done
 
-# Centos 7
-echo "Testing centos7..."
-docker pull centos:7
-echo "" >centos7.log
-if docker run -i -t --rm -v $PWD:/v centos:7 >centos7.log 2>&1 sh -c "SHARP_DIST_BASE_URL=https://github.com/avishnyak/sharp-libvips/releases/download/v8.8.0/; cd /v; ./test/centos.sh; $test";
-then echo "centos7 OK"
-else echo "centos7 fail" && cat /centos7.log
-fi
-
-# Archlinux latest
-echo "Testing archlinux..."
-docker pull pritunl/archlinux:latest
-echo "" >archlinux.log
-if docker run -i -t --rm -v $PWD:/v pritunl/archlinux:latest >archlinux.log 2>&1 sh -c "SHARP_DIST_BASE_URL=https://github.com/avishnyak/sharp-libvips/releases/download/v8.8.0/; cd /v; ./test/archlinux.sh; $test";
-then echo "archlinux OK"
-else echo "archlinux fail" && cat /archlinux.log
-fi
+rm -rf ./test-fs/
