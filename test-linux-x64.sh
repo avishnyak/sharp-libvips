@@ -6,11 +6,17 @@ if ! type docker >/dev/null; then
   exit 1
 fi
 
+libvipsversion=$(head -n 1 LIBVIPS_VERSION)
+
+echo "Detected LIBVIPS_VERSION: ${libvipsversion}"
+
 read -r -d '' test << EOM
 mkdir sharp &&
 curl -s https://api.github.com/repos/lovell/sharp/releases/latest | jq -r ".tarball_url" | xargs curl -Ls | tar xzC sharp --strip-components=1 &&
 cd ./sharp &&
-npm config set sharp_dist_base_url "https://github.com/avishnyak/sharp-libvips/releases/download/v8.8.1/" &&
+jq '.config.libvips = "${libvipsversion}"' package.json > package.new &&
+mv package.new package.json &&
+npm config set sharp_dist_base_url "https://github.com/avishnyak/sharp-libvips/releases/download/v${libvipsversion}/" &&
 npm run -s clean &&
 npm install --loglevel error --unsafe-perm &&
 npm run test-unit
