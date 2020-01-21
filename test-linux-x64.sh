@@ -22,16 +22,16 @@ npm install --loglevel error --unsafe-perm &&
 npm run test-unit
 EOM
 
-if [[ $* == *--quick* ]];
-then distros="debian:stretch"
-else distros="debian:jessie debian:stretch ubuntu:trusty ubuntu:xenial centos:7" # No support for archlinux:latest right now
+if [[ $* == *--all* ]];
+then distros="debian:jessie debian:stretch ubuntu:trusty ubuntu:xenial centos:7" # No support for archlinux:latest right now
+else distros="debian:stretch"
 fi
 
 for dist in $distros
 do
   dist_from_tag="${dist%:*}"
   echo "Testing $dist..."
-  docker pull $dist
+  docker pull -q $dist
   echo "" >$dist.log
   rm -rf ./test-fs/
   mkdir test-fs && cp -r ./test/ ./test-fs/test/
