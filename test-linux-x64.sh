@@ -23,8 +23,8 @@ npm run test-unit
 EOM
 
 if [[ $* == *--all* ]];
-then distros="debian:jessie debian:stretch ubuntu:trusty ubuntu:xenial centos:7" # No support for archlinux:latest right now
-else distros="debian:stretch"
+then distros="debian:buster debian:bullseye centos:7 alpine:3.11"
+else distros="debian:buster"
 fi
 
 for dist in $distros
