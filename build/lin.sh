@@ -37,9 +37,9 @@ VERSION_FONTCONFIG=2.13.92
 VERSION_HARFBUZZ=2.6.4
 VERSION_PIXMAN=0.38.4
 VERSION_CAIRO=1.16.0
-VERSION_FRIBIDI=1.0.8
+VERSION_FRIBIDI=1.0.9
 VERSION_PANGO=1.44.7
-VERSION_SVG=2.47.3
+VERSION_SVG=2.48.0
 VERSION_GIF=5.1.4
 VERSION_LIBIMAGEQUANT=2.12.6
 VERSION_MOZJPEG=3.3.1
@@ -112,7 +112,7 @@ make install
 rm ${TARGET}/lib/libz.a
 
 mkdir ${DEPS}/ffi
-curl -Ls https://sourceware.org/pub/libffi/libffi-${VERSION_FFI}.tar.gz | tar xzC ${DEPS}/ffi --strip-components=1
+curl -Ls https://www.mirrorservice.org/sites/sourceware.org/pub/libffi/libffi-${VERSION_FFI}.tar.gz | tar xzC ${DEPS}/ffi --strip-components=1
 cd ${DEPS}/ffi
 sed -i 's/@toolexeclibdir@/$(libdir)/g' Makefile.in
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-shared --disable-static --disable-dependency-tracking --disable-builddir
@@ -247,7 +247,7 @@ cd ${DEPS}/cairo
 make install-strip
 
 mkdir ${DEPS}/fribidi
-curl -Ls https://github.com/fribidi/fribidi/releases/download/v${VERSION_FRIBIDI}/fribidi-${VERSION_FRIBIDI}.tar.bz2 | tar xjC ${DEPS}/fribidi --strip-components=1
+curl -Ls https://github.com/fribidi/fribidi/releases/download/v${VERSION_FRIBIDI}/fribidi-${VERSION_FRIBIDI}.tar.xz | tar xJC ${DEPS}/fribidi --strip-components=1
 cd ${DEPS}/fribidi
 autoreconf -fiv
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-shared --disable-static --disable-dependency-tracking
