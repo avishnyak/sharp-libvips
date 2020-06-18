@@ -15,6 +15,8 @@ Please make contributions upstream at https://github.com/lovell/sharp-libvips.
 
 ## Licences
 
-The shared libraries contained in the tarballs
-are distributed under the terms of
-[various licences](https://github.com/lovell/sharp-libvips/blob/master/THIRD-PARTY-NOTICES.md), one of which is GPL.
+These scripts are licensed under the terms of the [Apache 2.0 Licence](LICENSE).
+[Apache 2.0 Licence](https://github.com/lovell/sharp-libvips/blob/master/LICENSE).
+
+The shared libraries contained in the tarballs are distributed under
+the terms of [various licences](THIRD-PARTY-NOTICES.md), one of which is GPL.
