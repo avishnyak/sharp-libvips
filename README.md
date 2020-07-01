@@ -9,6 +9,11 @@ Install Instructions:
 
 Currently compiled and tested against linux-x64 and linux-musl only.  Let me know if you need any of the other flavors.
 
+The base URL can be overridden using the
+`npm_config_sharp_libvips_binary_host` environment variable.
+
+https://sharp.pixelplumbing.com/install#custom-prebuilt-binaries
+
 # Contributions
 
 Please make contributions upstream at https://github.com/lovell/sharp-libvips.
@@ -16,7 +21,6 @@ Please make contributions upstream at https://github.com/lovell/sharp-libvips.
 ## Licences
 
 These scripts are licensed under the terms of the [Apache 2.0 Licence](LICENSE).
-[Apache 2.0 Licence](https://github.com/lovell/sharp-libvips/blob/master/LICENSE).
 
 The shared libraries contained in the tarballs are distributed under
 the terms of [various licences](THIRD-PARTY-NOTICES.md), one of which is GPL.

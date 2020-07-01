@@ -1,3 +1,6 @@
 libvips*
 *.log
-test-fs
+deps/
+target/
+test-fs/
+.DS_Store

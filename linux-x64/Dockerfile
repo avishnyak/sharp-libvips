@@ -10,6 +10,7 @@ RUN \
   yum group install -y "Development Tools" && \
   yum install -y --setopt=tsflags=nodocs \
     advancecomp \
+    brotli \
     cmake3 \
     devtoolset-8-gcc \
     devtoolset-8-gcc-c++ \
@@ -20,13 +21,11 @@ RUN \
     jq \
     nasm \
     ninja-build \
-    patchelf \
     prelink \
     python3 \
     && \
   curl https://sh.rustup.rs -sSf | sh -s -- -y && \
   ln -s /usr/bin/cmake3 /usr/bin/cmake && \
-  # ln -s /usr/bin/ninja-build /usr/bin/ninja && \
   pip3 install meson
 
 # Compiler settings
@@ -35,6 +34,9 @@ ENV \
   CXX="/opt/rh/devtoolset-8/root/usr/bin/g++" \
   PATH="/root/.cargo/bin:$PATH" \
   PLATFORM="linux-x64" \
-  FLAGS="-s -O3 -fPIC"
+  RUST_TARGET="x86_64-unknown-linux-gnu" \
+  FLAGS="-O3 -fPIC" \
+  MESON="--cross-file=/root/meson.ini"
 
 COPY Toolchain.cmake /root/
+COPY meson.ini /root/

@@ -6,7 +6,7 @@ if [ $# -lt 1 ]; then
   echo "Usage: $0 VERSION [PLATFORM]"
   echo "Build shared libraries for libvips and its dependencies via containers"
   echo
-  echo "Please specify the libvips VERSION, e.g. 8.9.1"
+  echo "Please specify the libvips VERSION, e.g. 8.9.2"
   echo
   echo "Optionally build for only one PLATFORM, defaults to building for all"
   echo
@@ -18,14 +18,40 @@ if [ $# -lt 1 ]; then
   echo "- linux-armv6"
   echo "- linux-armv7"
   echo "- linux-arm64v8"
+  echo "- darwin-x64"
   echo
   exit 1
 fi
 VERSION_VIPS="$1"
 PLATFORM="${2:-all}"
 
+# macOS
+# Note: we intentionally don't build these binaries inside a Docker container
+if [ $PLATFORM = "darwin-x64" ] && [ "$(uname)" == "Darwin" ]; then
+  # Use Clang provided by XCode
+  export CC="clang"
+  export CXX="clang++"
+
+  export VERSION_VIPS
+  export PLATFORM
+  export RUST_TARGET="x86_64-apple-darwin"
+
+  # 10.9 should be a good minimal release target
+  export MACOSX_DEPLOYMENT_TARGET="10.9"
+
+  # Added -fno-stack-check to workaround a stack misalignment bug on macOS 10.15
+  # See:
+  # https://forums.developer.apple.com/thread/121887
+  # https://trac.ffmpeg.org/ticket/8073#comment:12
+  export FLAGS="-O3 -fPIC -fno-stack-check"
+
+  . $PWD/build/mac.sh
+
+  exit 0
+fi
+
 # Is docker available?
-if ! type docker >/dev/null; then
+if ! [ -x "$(command -v docker)" ]; then
   echo "Please install docker"
   exit 1
 fi
@@ -54,4 +80,4 @@ for flavour in linux-x64 linuxmusl-x64 linux-armv6 linux-armv7 linux-arm64v8; do
 done
 
 # Display checksums
-sha256sum *.tar.gz
+sha256sum *.tar.{br,gz}
