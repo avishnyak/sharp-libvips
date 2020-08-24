@@ -3,6 +3,12 @@ LABEL maintainer="anton@b8ta.com"
 
 # Create CentOS 7 (glibc 2.17) container suitable for building Linux x64 binaries
 
+# Path settings
+ENV \
+  RUSTUP_HOME="/usr/local/rustup" \
+  CARGO_HOME="/usr/local/cargo" \
+  PATH="/usr/local/cargo/bin:/opt/rh/devtoolset-9/root/usr/bin:$PATH"
+
 # Build dependencies
 RUN \
   yum update -y && \
@@ -12,8 +18,8 @@ RUN \
     advancecomp \
     brotli \
     cmake3 \
-    devtoolset-8-gcc \
-    devtoolset-8-gcc-c++ \
+    devtoolset-9-gcc \
+    devtoolset-9-gcc-c++ \
     glib2-devel \
     gobject-introspection-devel \
     gperf \
@@ -24,17 +30,16 @@ RUN \
     prelink \
     python3 \
     && \
-  curl https://sh.rustup.rs -sSf | sh -s -- -y && \
+  curl https://sh.rustup.rs -sSf | sh -s -- -y \
+    --no-modify-path \
+    --profile minimal \
+    && \
   ln -s /usr/bin/cmake3 /usr/bin/cmake && \
   pip3 install meson
 
 # Compiler settings
 ENV \
-  CC="/opt/rh/devtoolset-8/root/usr/bin/gcc" \
-  CXX="/opt/rh/devtoolset-8/root/usr/bin/g++" \
-  PATH="/root/.cargo/bin:$PATH" \
   PLATFORM="linux-x64" \
-  RUST_TARGET="x86_64-unknown-linux-gnu" \
   FLAGS="-O3 -fPIC" \
   MESON="--cross-file=/root/meson.ini"
 

@@ -23,6 +23,7 @@ used under the terms of the following licences:
 | libimagequant | [GPLv3](https://github.com/ImageOptim/libimagequant/blob/master/COPYRIGHT)                                |
 | libpng        | [libpng License](https://github.com/glennrp/libpng/blob/master/LICENSE)                                   |
 | librsvg       | LGPLv3                                                                                                    |
+| libspng       | [BSD 2-Clause, libpng License](https://github.com/randy408/libspng/blob/master/LICENSE)                   |
 | libtiff       | [libtiff License](https://libtiff.gitlab.io/libtiff/misc.html) (BSD-like)                                 |
 | libvips       | LGPLv3                                                                                                    |
 | libwebp       | New BSD License                                                                                           |

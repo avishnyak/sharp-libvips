@@ -45,14 +45,20 @@ if [ "$DARWIN" = true ]; then
   export LDFLAGS+=" -framework CoreServices -framework CoreFoundation -framework Foundation -framework AppKit"
 fi
 
-# Optimise Rust code for binary size
-export RUSTFLAGS="${RUSTFLAGS} -Copt-level=s -Clto=on -Ccodegen-units=1 -Cincremental=false -Cpanic=abort"
-
-# Set a default build target for Cargo if we're not cross-compiling
-# See: https://github.com/rust-lang/cargo/issues/6375#issuecomment-444900324
-if [ -z "${CHOST}" ]; then
-  export CARGO_BUILD_TARGET="${RUST_TARGET}"
+# Run as many parallel jobs as there are available CPU cores
+if [ "$LINUX" = true ]; then
+  export MAKEFLAGS="-j$(nproc)"
+elif [ "$DARWIN" = true ]; then
+  export MAKEFLAGS="-j$(sysctl -n hw.logicalcpu)"
 fi
+
+# Optimise Rust code for binary size
+export CARGO_PROFILE_RELEASE_DEBUG=false
+export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1
+export CARGO_PROFILE_RELEASE_INCREMENTAL=false
+export CARGO_PROFILE_RELEASE_LTO=true
+export CARGO_PROFILE_RELEASE_OPT_LEVEL=s
+export CARGO_PROFILE_RELEASE_PANIC=abort
 
 # We don't want to use any native libraries, so unset PKG_CONFIG_PATH
 unset PKG_CONFIG_PATH
@@ -60,27 +66,28 @@ unset PKG_CONFIG_PATH
 # Dependency version numbers
 VERSION_ZLIB=1.2.11
 VERSION_FFI=3.3
-VERSION_GLIB=2.65.0
+VERSION_GLIB=2.65.2
 VERSION_XML2=2.9.10
 VERSION_GSF=1.14.47
 VERSION_EXIF=0.6.22
 VERSION_LCMS2=2.11
 # VERSION_JPEG=2.0.5
 VERSION_PNG16=1.6.37
+VERSION_SPNG=0.6.0
 VERSION_WEBP=1.1.0
 VERSION_TIFF=4.1.0
 VERSION_ORC=0.4.31
-VERSION_GETTEXT=0.20.2
+VERSION_GETTEXT=0.21
 VERSION_GDKPIXBUF=2.40.0
 VERSION_FREETYPE=2.10.2
 VERSION_EXPAT=2.2.9
 VERSION_FONTCONFIG=2.13.92
-VERSION_HARFBUZZ=2.6.8
+VERSION_HARFBUZZ=2.7.1
 VERSION_PIXMAN=0.40.0
 VERSION_CAIRO=1.16.0
 VERSION_FRIBIDI=1.0.10
-VERSION_PANGO=1.45.3
-VERSION_SVG=2.49.3
+VERSION_PANGO=1.46.1
+VERSION_SVG=2.49.4
 VERSION_GIF=5.1.4
 VERSION_LIBIMAGEQUANT=2.12.6
 VERSION_MOZJPEG=3.3.1
@@ -108,6 +115,7 @@ version_latest "exif" "$VERSION_EXIF" "1607"
 version_latest "lcms2" "$VERSION_LCMS2" "9815"
 # version_latest "jpeg" "$VERSION_JPEG" "1648"
 version_latest "png" "$VERSION_PNG16" "1705"
+version_latest "spng" "$VERSION_SPNG" "24289"
 version_latest "webp" "$VERSION_WEBP" "1761"
 version_latest "tiff" "$VERSION_TIFF" "13521"
 version_latest "orc" "$VERSION_ORC" "2573"
@@ -213,6 +221,15 @@ cd ${DEPS}/png16
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking
 make install-strip
 
+mkdir ${DEPS}/spng
+curl -Ls https://github.com/randy408/libspng/archive/v${VERSION_SPNG}.tar.gz | tar xzC ${DEPS}/spng --strip-components=1
+cd ${DEPS}/spng
+patch -p1 < ${PACKAGE}/build/patches/libspng-0.6-fixes.patch
+meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
+  -Dstatic_zlib=true
+ninja -C _build
+ninja -C _build install
+
 mkdir ${DEPS}/webp
 curl -Ls https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${VERSION_WEBP}.tar.gz | tar xzC ${DEPS}/webp --strip-components=1
 cd ${DEPS}/webp
@@ -260,7 +277,7 @@ mkdir ${DEPS}/freetype
 curl -Ls https://download.savannah.gnu.org/releases/freetype/freetype-${VERSION_FREETYPE}.tar.xz | tar xJC ${DEPS}/freetype --strip-components=1
 cd ${DEPS}/freetype
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking \
-  --without-bzip2
+  --without-bzip2 --without-png
 make install
 
 mkdir ${DEPS}/expat
@@ -274,16 +291,19 @@ mkdir ${DEPS}/fontconfig
 curl -Ls https://www.freedesktop.org/software/fontconfig/release/fontconfig-${VERSION_FONTCONFIG}.tar.xz | tar xJC ${DEPS}/fontconfig --strip-components=1
 cd ${DEPS}/fontconfig
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking \
-  --with-expat-includes=${TARGET}/include --with-expat-lib=${TARGET}/lib --sysconfdir=${TARGET}/etc --disable-docs
+  --with-expat-includes=${TARGET}/include --with-expat-lib=${TARGET}/lib ${LINUX:+--sysconfdir=/etc} \
+  ${DARWIN:+--sysconfdir=/usr/local/etc} --disable-docs
 make install-strip
 
 mkdir ${DEPS}/harfbuzz
-curl -Ls https://github.com/harfbuzz/harfbuzz/releases/download/${VERSION_HARFBUZZ}/harfbuzz-${VERSION_HARFBUZZ}.tar.xz | tar xJC ${DEPS}/harfbuzz --strip-components=1
+curl -Ls https://github.com/harfbuzz/harfbuzz/archive/${VERSION_HARFBUZZ}.tar.gz | tar xzC ${DEPS}/harfbuzz --strip-components=1
 cd ${DEPS}/harfbuzz
-sed -i'.bak' "s/error   \"-Wunused-local-typedefs\"/ignored \"-Wunused-local-typedefs\"/" src/hb.hh
-./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking \
-  --without-icu ${DARWIN:+--with-coretext}
-make install-strip
+# Disable utils
+sed -i'.bak' "/subdir('util')/d" meson.build
+LDFLAGS=${LDFLAGS/\$/} meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
+  -Dicu=disabled -Dtests=disabled -Dintrospection=disabled -Ddocs=disabled -Dbenchmark=disabled ${DARWIN:+-Dcoretext=enabled}
+ninja -C _build
+ninja -C _build install
 
 mkdir ${DEPS}/pixman
 curl -Ls https://cairographics.org/releases/pixman-${VERSION_PIXMAN}.tar.gz | tar xzC ${DEPS}/pixman --strip-components=1
@@ -316,7 +336,7 @@ ninja -C _build
 ninja -C _build install
 
 mkdir ${DEPS}/pango
-curl -Lks https://download.gnome.org/sources/pango/$(without_patch $VERSION_PANGO)/pango-${VERSION_PANGO}.tar.xz | tar xJC ${DEPS}/pango --strip-components=1
+curl -Ls https://download.gnome.org/sources/pango/$(without_patch $VERSION_PANGO)/pango-${VERSION_PANGO}.tar.xz | tar xJC ${DEPS}/pango --strip-components=1
 cd ${DEPS}/pango
 # Disable utils, examples, tests and tools
 sed -i'.bak' "/subdir('utils')/{N;N;N;d;}" meson.build
@@ -326,7 +346,7 @@ ninja -C _build
 ninja -C _build install
 
 mkdir ${DEPS}/svg
-curl -Lks https://download.gnome.org/sources/librsvg/$(without_patch $VERSION_SVG)/librsvg-${VERSION_SVG}.tar.xz | tar xJC ${DEPS}/svg --strip-components=1
+curl -Ls https://download.gnome.org/sources/librsvg/$(without_patch $VERSION_SVG)/librsvg-${VERSION_SVG}.tar.xz | tar xJC ${DEPS}/svg --strip-components=1
 cd ${DEPS}/svg
 sed -i'.bak' "s/^\(Requires:.*\)/\1 cairo-gobject pangocairo/" librsvg.pc.in
 # Do not include debugging symbols
@@ -335,7 +355,7 @@ sed -i'.bak' "/debug =/ s/= .*/= false/" Cargo.toml
 sed -i'.bak' "s/, \"rlib\"//" librsvg/Cargo.toml
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking \
   --disable-introspection --disable-tools --disable-pixbuf-loader ${DARWIN:+--disable-Bsymbolic}
-make install-strip RUST_TARGET_SUBDIR="${RUST_TARGET}/release"
+make install-strip
 
 mkdir ${DEPS}/gif
 curl -Ls https://sourceforge.mirrorservice.org/g/gi/giflib/giflib-${VERSION_GIF}.tar.gz | tar xzC ${DEPS}/gif --strip-components=1
@@ -347,9 +367,9 @@ mkdir ${DEPS}/vips
 curl -Ls https://github.com/libvips/libvips/releases/download/v${VERSION_VIPS}/vips-${VERSION_VIPS}.tar.gz | tar xzC ${DEPS}/vips --strip-components=1
 cd ${DEPS}/vips
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-shared --disable-static --disable-dependency-tracking \
-  --disable-debug --disable-introspection --without-analyze --without-cfitsio --without-fftw --without-heif \
-  --with-imagequant --without-magick --without-matio --without-nifti --without-OpenEXR --without-openslide \
-  --without-pdfium --without-poppler --without-ppm --without-radiance
+  --disable-debug --disable-deprecated --disable-introspection --without-analyze --without-cfitsio --without-fftw \
+  --without-heif --with-imagequant --without-magick --without-matio --without-nifti --without-OpenEXR \
+  --without-openslide --without-pdfium --without-poppler --without-ppm --without-radiance
 # https://docs.fedoraproject.org/en-US/packaging-guidelines/#_removing_rpath
 sed -i'.bak' 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
 make install-strip
@@ -422,6 +442,7 @@ printf "{\n\
   \"pixman\": \"${VERSION_PIXMAN}\",\n\
   \"png\": \"${VERSION_PNG16}\",\n\
   \"svg\": \"${VERSION_SVG}\",\n\
+  \"spng\": \"${VERSION_SPNG}\",\n\
   \"tiff\": \"${VERSION_TIFF}\",\n\
   \"vips\": \"${VERSION_VIPS}\",\n\
   \"webp\": \"${VERSION_WEBP}\",\n\
