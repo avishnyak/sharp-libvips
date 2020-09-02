@@ -212,7 +212,7 @@ mkdir ${DEPS}/mozjpeg
 curl -Ls https://github.com/mozilla/mozjpeg/archive/v${VERSION_MOZJPEG}.tar.gz | tar xzC ${DEPS}/mozjpeg --strip-components=1
 cd ${DEPS}/mozjpeg
 autoreconf -fiv
-./configure --host=${CHOST} --prefix=${TARGET} --disable-shared --enable-static --disable-dependency-tracking --with-jpeg8
+./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking --with-jpeg8
 make install
 
 mkdir ${DEPS}/png16
